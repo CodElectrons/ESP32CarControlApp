@@ -1,20 +1,33 @@
----
-version: 2
+name: Android Build
 
-updates:
-- package-ecosystem: "npm"
-  directory: "/"
-  schedule:
-    interval: "weekly"
-  groups:
-    minor-npm-dependencies:
-      # NPM: Only group minor and patch updates (we want to carefully review major updates)
-      update-types: [minor, patch]
-- package-ecosystem: "github-actions"
-  directory: "/"
-  schedule:
-    interval: "weekly"
-  groups:
-    minor-actions-dependencies:
-      # GitHub Actions: Only group minor and patch updates (we want to carefully review major updates)
-      update-types: [minor, patch]
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Build APK
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
